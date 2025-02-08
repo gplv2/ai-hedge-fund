@@ -1,0 +1,3 @@
+[submodule "ibeam"]
+	path = ibeam
+	url = https://github.com/Voyz/ibeam.git
