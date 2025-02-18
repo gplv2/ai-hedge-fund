@@ -2,9 +2,12 @@ from langchain_core.messages import HumanMessage
 from graph.state import AgentState, show_agent_reasoning
 from utils.progress import progress
 import json
+import sys
 
 from tools.api import get_financial_metrics
 
+import logging
+logger = logging.getLogger(__name__)
 
 ##### Fundamental Agent #####
 def fundamentals_agent(state: AgentState):
@@ -31,6 +34,10 @@ def fundamentals_agent(state: AgentState):
             progress.update_status("fundamentals_agent", ticker, "Failed: No financial metrics found")
             continue
 
+        #logger.info("financial metrics:")
+        #logger.debug(financial_metrics)
+        #logger.debug(type(financial_metrics))
+
         # Pull the most recent financial metrics
         metrics = financial_metrics[0]
 
@@ -38,11 +45,17 @@ def fundamentals_agent(state: AgentState):
         signals = []
         reasoning = {}
 
-        progress.update_status("fundamentals_agent", ticker, "Analyzing profitability")
         # 1. Profitability Analysis
-        return_on_equity = metrics.return_on_equity
-        net_margin = metrics.net_margin
-        operating_margin = metrics.operating_margin
+        logger.info("metrics:")
+        logger.debug(metrics)
+        logger.debug(type(metrics))
+
+        return_on_equity = metrics.get("return_on_equity") # Safely retrieves value
+        net_margin = metrics.get("net_margin") # Safely retrieves value
+        operating_margin = metrics.get("operating_margin") # Safely retrieves value
+        #sys.exit()
+
+        progress.update_status("fundamentals_agent", ticker, "Analyzing profitability")
 
         thresholds = [
             (return_on_equity, 0.15),  # Strong ROE above 15%
@@ -59,9 +72,9 @@ def fundamentals_agent(state: AgentState):
 
         progress.update_status("fundamentals_agent", ticker, "Analyzing growth")
         # 2. Growth Analysis
-        revenue_growth = metrics.revenue_growth
-        earnings_growth = metrics.earnings_growth
-        book_value_growth = metrics.book_value_growth
+        revenue_growth= metrics.get("revenue_growth") # Safely retrieves value
+        earnings_growth = metrics.get("earnings_growth") # Safely retrieves value
+        book_value_growth = metrics.get("book_value_growth") # Safely retrieves value
 
         thresholds = [
             (revenue_growth, 0.10),  # 10% revenue growth
@@ -77,11 +90,13 @@ def fundamentals_agent(state: AgentState):
         }
 
         progress.update_status("fundamentals_agent", ticker, "Analyzing financial health")
+
         # 3. Financial Health
-        current_ratio = metrics.current_ratio
-        debt_to_equity = metrics.debt_to_equity
-        free_cash_flow_per_share = metrics.free_cash_flow_per_share
-        earnings_per_share = metrics.earnings_per_share
+
+        current_ratio = metrics.get("current_ration")
+        debt_to_equity = metrics.get("deb_to_equity")
+        free_cash_flow_per_share = metrics.get("free_cash_flow_per_share")
+        earnings_per_share = metrics.get("earnings_per_share")
 
         health_score = 0
         if current_ratio and current_ratio > 1.5:  # Strong liquidity
@@ -99,9 +114,10 @@ def fundamentals_agent(state: AgentState):
 
         progress.update_status("fundamentals_agent", ticker, "Analyzing valuation ratios")
         # 4. Price to X ratios
-        pe_ratio = metrics.price_to_earnings_ratio
-        pb_ratio = metrics.price_to_book_ratio
-        ps_ratio = metrics.price_to_sales_ratio
+
+        pe_ratio = metrics.get("price_to_earnings_ratio")
+        pb_ratio = metrics.get("price_to_book_ratio")
+        ps_ratio = metrics.get("price_to_sales_ratio")
 
         thresholds = [
             (pe_ratio, 25),  # Reasonable P/E ratio

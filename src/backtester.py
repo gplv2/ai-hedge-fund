@@ -700,7 +700,7 @@ if __name__ == "__main__":
         "--initial-capital",
         type=float,
         default=45000,
-        help="Initial capital amount (default: 100000)",
+        help="Initial capital amount (default: 45000)",
     )
     parser.add_argument(
         "--margin-requirement",

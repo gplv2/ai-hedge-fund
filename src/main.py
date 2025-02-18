@@ -177,13 +177,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--initial-cash",
         type=float,
-        default=100000.0,
+        default=15000.0,
         help="Initial cash position. Defaults to 100000.0)"
     )
     parser.add_argument(
         "--margin-requirement",
         type=float,
-        default=0.0,
+        default=20.0,
         help="Initial margin requirement. Defaults to 0.0"
     )
     parser.add_argument("--tickers", type=str, required=True, help="Comma-separated list of stock ticker symbols")
@@ -282,7 +282,7 @@ if __name__ == "__main__":
     if not args.start_date:
         # Calculate 3 months before end_date
         end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-        start_date = (end_date_obj - relativedelta(months=3)).strftime("%Y-%m-%d")
+        start_date = (end_date_obj - relativedelta(months=1)).strftime("%Y-%m-%d")
     else:
         start_date = args.start_date
 
