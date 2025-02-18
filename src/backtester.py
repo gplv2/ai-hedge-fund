@@ -38,6 +38,7 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 #logging.getLogger('matplotlib').disabled = True
 # Suppress debug logs from PIL (Pillow)
 logging.getLogger("PIL").setLevel(logging.WARNING)
+logging.getLogger("openai._base_client").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
