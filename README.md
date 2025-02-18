@@ -13,7 +13,7 @@ This system employs several agents working together:
 7. Technicals Agent - Analyzes technical indicators and generates trading signals
 8. Risk Manager - Calculates risk metrics and sets position limits
 9. Portfolio Manager - Makes final trading decisions and generates orders
-   
+
 <img width="1117" alt="Screenshot 2025-02-09 at 11 26 14 AM" src="https://github.com/user-attachments/assets/16509cc2-4b64-4c67-8de6-00d224893d58" />
 
 **Note**: the system simulates trading decisions, it does not actually trade.
