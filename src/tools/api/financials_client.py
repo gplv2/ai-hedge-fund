@@ -41,11 +41,6 @@ from utils.cache import redis_cache
 #def set_cache_financial_metrics(ticker, data):
     #_cache[ticker] = data
 
-# get_prices(ticker, start_date_str, self.end_date)
-# get_financial_metrics(ticker, self.end_date, limit=10)
-# get_insider_trades(ticker, self.end_date, start_date=self.start_date, limit=1000)
-# get_company_news(ticker, self.end_date, start_date=self.start_date, limit=1000)
-
 class FinancialsAPIClient:
     def __init__(self, config=None):
         self.config = config or {}
@@ -326,7 +321,8 @@ class FinancialsAPIClient:
     def get_market_cap( self, ticker, end_date: str, ) -> float | None:
         """Fetch market cap from the API."""
         financial_metrics = self.get_financial_metrics(ticker, end_date)
-        market_cap = financial_metrics[0].market_cap
+        #market_cap = financial_metrics[0].market_cap
+        market_cap = financial_metrics[0].get('market_cap')
         pprint(market_cap)
         if not market_cap:
             return None

@@ -66,21 +66,6 @@ class IBKRClientWrapper:
     def positions(self):
         return self.client.positions().data
 
-    # For compatibility, if callers try to get financial metrics,
-    # signal that IBKR does not support that call.
-    def get_financial_metrics(self, ticker, end_date, period="ttm", limit=10):
-        raise NotImplementedError("IBKR client does not implement get_financial_metrics")
-
-    def prices_to_df_alt(self, prices: list) -> pd.DataFrame:
-        raise NotImplementedError("IBKR client does not implement prices_to_df_alt")
-
-    # signal that IBKR does not support that call.
-    def get_insider_trades(self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[InsiderTrade]:
-        raise NotImplementedError("IBKR client does not implement get_financial_metrics")
-
-    def get_company_news( self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[CompanyNews]:
-        raise NotImplementedError("IBKR client does not implement get_financial_metrics")
-
     # Update the get_price_data function to use the new functions
     def get_price_data(self, ticker, start_date: str, end_date: str) -> pd.DataFrame:
         prices = self.get_prices(ticker, start_date, end_date)
@@ -467,4 +452,25 @@ class IBKRClientWrapper:
             "prices": new_prices
         }
         return transformed
+
+    # For compatibility, if callers try to get financial metrics,
+    # signal that IBKR does not support that call.
+    def get_financial_metrics(self, ticker, end_date, period="ttm", limit=10):
+        raise NotImplementedError("IBKR client does not implement get_financial_metrics")
+
+    def get_market_cap( self, ticker, end_date: str, ) -> float | None:
+        raise NotImplementedError("IBKR client does not implement get_market_cap")
+
+    def prices_to_df_alt(self, prices: list) -> pd.DataFrame:
+        raise NotImplementedError("IBKR client does not implement prices_to_df_alt")
+
+    # signal that IBKR does not support that call.
+    def get_insider_trades(self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[InsiderTrade]:
+        raise NotImplementedError("IBKR client does not implement get_insider_trades")
+
+    def get_company_news( self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[CompanyNews]:
+        raise NotImplementedError("IBKR client does not implement get_company_news")
+
+    def search_line_items(self, ticker, line_items: list[str], end_date: str, period: str = "30d" , limit: int = 100) -> list[LineItem]:
+        raise NotImplementedError("IBKR client does not implement search_line_items")
 

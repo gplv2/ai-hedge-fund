@@ -8,6 +8,9 @@ from typing_extensions import Literal
 from utils.progress import progress
 from utils.llm import call_llm
 
+import logging
+logger = logging.getLogger(__name__)
+
 class PortfolioDecision(BaseModel):
     action: Literal["buy", "sell", "short", "cover", "hold"]
     quantity: int = Field(description="Number of shares to trade")

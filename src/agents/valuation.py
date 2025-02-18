@@ -3,8 +3,10 @@ from graph.state import AgentState, show_agent_reasoning
 from utils.progress import progress
 import json
 
-from tools.api import get_financial_metrics, get_market_cap, search_line_items
+from tools.api import get_financial_metrics, get_market_cap, get_market_cap, search_line_items
 
+import logging
+logger = logging.getLogger(__name__)
 
 ##### Valuation Agent #####
 def valuation_agent(state: AgentState):
@@ -60,15 +62,15 @@ def valuation_agent(state: AgentState):
 
         progress.update_status("valuation_agent", ticker, "Calculating owner earnings")
         # Calculate working capital change
-        working_capital_change = current_financial_line_item.working_capital - previous_financial_line_item.working_capital
+        working_capital_change = current_financial_line_item.get('working_capital') - previous_financial_line_item.get('working_capital')
 
         # Owner Earnings Valuation (Buffett Method)
         owner_earnings_value = calculate_owner_earnings_value(
-            net_income=current_financial_line_item.net_income,
-            depreciation=current_financial_line_item.depreciation_and_amortization,
-            capex=current_financial_line_item.capital_expenditure,
+            net_income=current_financial_line_item.get('net_income'),
+            depreciation=current_financial_line_item.get('depreciation_and_amortization'),
+            capex=current_financial_line_item.get('capital_expenditure'),
             working_capital_change=working_capital_change,
-            growth_rate=metrics.earnings_growth,
+            growth_rate=metrics.get('earnings_growth'),
             required_return=0.15,
             margin_of_safety=0.25,
         )
@@ -76,8 +78,8 @@ def valuation_agent(state: AgentState):
         progress.update_status("valuation_agent", ticker, "Calculating DCF value")
         # DCF Valuation
         dcf_value = calculate_intrinsic_value(
-            free_cash_flow=current_financial_line_item.free_cash_flow,
-            growth_rate=metrics.earnings_growth,
+            free_cash_flow=current_financial_line_item.get('free_cash_flow'),
+            growth_rate=metrics.get('earnings_growth'),
             discount_rate=0.10,
             terminal_growth_rate=0.03,
             num_years=5,

@@ -4,6 +4,8 @@ from utils.progress import progress
 from tools.api import get_prices, prices_to_df, prices_to_df_alt
 import json
 
+import logging
+logger = logging.getLogger(__name__)
 
 ##### Risk Management Agent #####
 def risk_management_agent(state: AgentState):

@@ -65,3 +65,11 @@ def get_insider_trades(*args, **kwargs):
     client = get_api_client()
     return client.get_insider_trades(*args, **kwargs)
 
+def get_market_cap(*args, **kwargs):
+    client = get_api_client()
+    return client.get_market_cap(*args, **kwargs)
+
+def search_line_items(*args, **kwargs):
+    client = get_api_client()
+    return client.search_line_items(*args, **kwargs)
+

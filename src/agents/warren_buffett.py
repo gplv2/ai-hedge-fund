@@ -12,6 +12,8 @@ from tools.api import (
 from utils.llm import call_llm
 from utils.progress import progress
 
+import logging
+logger = logging.getLogger(__name__)
 
 class WarrenBuffettSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
@@ -141,42 +143,42 @@ def analyze_fundamentals(metrics: list) -> dict[str, any]:
     reasoning = []
 
     # Check ROE (Return on Equity)
-    if latest_metrics.return_on_equity and latest_metrics.return_on_equity > 0.15:  # 15% ROE threshold
+    if latest_metrics.get('return_on_equity') and latest_metrics.get('return_on_equity') > 0.15:  # 15% ROE threshold
         score += 2
-        reasoning.append(f"Strong ROE of {latest_metrics.return_on_equity:.1%}")
-    elif latest_metrics.return_on_equity:
-        reasoning.append(f"Weak ROE of {latest_metrics.return_on_equity:.1%}")
+        reasoning.append(f"Strong ROE of {latest_metrics.get('return_on_equity'):.1%}")
+    elif latest_metrics.get('return_on_equity'):
+        reasoning.append(f"Weak ROE of {latest_metrics.get('return_on_equity'):.1%}")
     else:
         reasoning.append("ROE data not available")
 
     # Check Debt to Equity
-    if latest_metrics.debt_to_equity and latest_metrics.debt_to_equity < 0.5:
+    if latest_metrics.get('debt_to_equity') and latest_metrics.get('debt_to_equity') < 0.5:
         score += 2
         reasoning.append("Conservative debt levels")
-    elif latest_metrics.debt_to_equity:
-        reasoning.append(f"High debt to equity ratio of {latest_metrics.debt_to_equity:.1f}")
+    elif latest_metrics.get('debt_to_equity'):
+        reasoning.append(f"High debt to equity ratio of {latest_metrics.get('debt_to_equity'):.1f}")
     else:
         reasoning.append("Debt to equity data not available")
 
     # Check Operating Margin
-    if latest_metrics.operating_margin and latest_metrics.operating_margin > 0.15:
+    if latest_metrics.get('operating_margin') and latest_metrics.get('operating_margin') > 0.15:
         score += 2
         reasoning.append("Strong operating margins")
-    elif latest_metrics.operating_margin:
-        reasoning.append(f"Weak operating margin of {latest_metrics.operating_margin:.1%}")
+    elif latest_metrics.get('operating_margin'):
+        reasoning.append(f"Weak operating margin of {latest_metrics.get('operating_margin'):.1%}")
     else:
         reasoning.append("Operating margin data not available")
 
     # Check Current Ratio
-    if latest_metrics.current_ratio and latest_metrics.current_ratio > 1.5:
+    if latest_metrics.get('current_ratio') and latest_metrics.get('current_ratio') > 1.5:
         score += 1
         reasoning.append("Good liquidity position")
-    elif latest_metrics.current_ratio:
-        reasoning.append(f"Weak liquidity with current ratio of {latest_metrics.current_ratio:.1f}")
+    elif latest_metrics.get('current_ratio'):
+        reasoning.append(f"Weak liquidity with current ratio of {latest_metrics.get('current_ratio'):.1f}")
     else:
         reasoning.append("Current ratio data not available")
-
-    return {"score": score, "details": "; ".join(reasoning), "metrics": latest_metrics.model_dump()}
+    logger.debug(latest_metrics)
+    return {"score": score, "details": "; ".join(reasoning), "metrics": latest_metrics}
 
 
 def analyze_consistency(financial_line_items: list) -> dict[str, any]:
@@ -188,7 +190,7 @@ def analyze_consistency(financial_line_items: list) -> dict[str, any]:
     reasoning = []
 
     # Check earnings growth trend
-    earnings_values = [item.net_income for item in financial_line_items if item.net_income]
+    earnings_values = [item.get('net_income') for item in financial_line_items if item.get('net_income')]
     if len(earnings_values) >= 4:
         earnings_growth = all(earnings_values[i] > earnings_values[i + 1] for i in range(len(earnings_values) - 1))
 
@@ -220,9 +222,9 @@ def calculate_owner_earnings(financial_line_items: list) -> dict[str, any]:
     latest = financial_line_items[0]
 
     # Get required components
-    net_income = latest.net_income
-    depreciation = latest.depreciation_and_amortization
-    capex = latest.capital_expenditure
+    net_income = latest.get('net_income')
+    depreciation = latest.get('depreciation_and_amortization')
+    capex = latest.get('capital_expenditure')
 
     if not all([net_income, depreciation, capex]):
         return {"owner_earnings": None, "details": ["Missing components for owner earnings calculation"]}
@@ -253,7 +255,7 @@ def calculate_intrinsic_value(financial_line_items: list) -> dict[str, any]:
 
     # Get current market data
     latest_financial_line_items = financial_line_items[0]
-    shares_outstanding = latest_financial_line_items.outstanding_shares
+    shares_outstanding = latest_financial_line_items.get('outstanding_shares')
 
     if not shares_outstanding:
         return {"value": None, "details": ["Missing shares outstanding data"]}
