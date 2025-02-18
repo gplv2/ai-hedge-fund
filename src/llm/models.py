@@ -32,6 +32,16 @@ class LLMModel(BaseModel):
 # Define available models
 AVAILABLE_MODELS = [
     LLMModel(
+        display_name="[openai] gpt-4o",
+        model_name="gpt-4o",
+        provider=ModelProvider.OPENAI
+    ),
+    LLMModel(
+        display_name="[openai] gpt-4o-mini",
+        model_name="gpt-4o-mini",
+        provider=ModelProvider.OPENAI
+    ),
+    LLMModel(
         display_name="[anthropic] claude-3.5-haiku",
         model_name="claude-3-5-haiku-latest",
         provider=ModelProvider.ANTHROPIC
@@ -55,16 +65,6 @@ AVAILABLE_MODELS = [
         display_name="[groq] llama-3.3 70b",
         model_name="llama-3.3-70b-versatile",
         provider=ModelProvider.GROQ
-    ),
-    LLMModel(
-        display_name="[openai] gpt-4o",
-        model_name="gpt-4o",
-        provider=ModelProvider.OPENAI
-    ),
-    LLMModel(
-        display_name="[openai] gpt-4o-mini",
-        model_name="gpt-4o-mini",
-        provider=ModelProvider.OPENAI
     ),
     LLMModel(
         display_name="[openai] o1",
