@@ -188,7 +188,7 @@ def analyze_business_quality(metrics: list, financial_line_items: list) -> dict:
     if latest_metrics.get('return_on_equity') and latest_metrics.get('return_on_equity') > 0.15:
         score += 2
         details.append(f"High ROE of {latest_metrics.get('return_on_equity'):.1%}, indicating potential moat.")
-    elif latest_metrics.return_on_equity:
+    elif latest_metrics.get('return_on_equity'):
         details.append(f"ROE of {latest_metrics.get('return_on_equity'):.1%} is not indicative of a strong moat.")
     else:
         details.append("ROE data not available in metrics.")

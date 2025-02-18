@@ -41,6 +41,10 @@ def sentiment_agent(state: AgentState):
         # Get the company news
         company_news = get_company_news(ticker, end_date, limit=100)
 
+        logger.info('company_news')
+        logger.debug(type(company_news))
+        logger.debug(company_news)
+
         # Get the sentiment from the company news
         sentiment = pd.Series([n.get('sentiment') for n in company_news]).dropna()
         news_signals = np.where(sentiment == "negative", "bearish", 

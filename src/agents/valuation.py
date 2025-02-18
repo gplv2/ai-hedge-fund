@@ -62,6 +62,10 @@ def valuation_agent(state: AgentState):
 
         progress.update_status("valuation_agent", ticker, "Calculating owner earnings")
         # Calculate working capital change
+        logger.info('current_financial_line_item')
+        logger.debug(type(current_financial_line_item))
+        logger.debug(current_financial_line_item)
+
         working_capital_change = current_financial_line_item.get('working_capital') - previous_financial_line_item.get('working_capital')
 
         # Owner Earnings Valuation (Buffett Method)
