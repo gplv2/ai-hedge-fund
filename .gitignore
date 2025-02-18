@@ -45,3 +45,5 @@ Thumbs.db
 
 # output dir
 output/
+
+*.log

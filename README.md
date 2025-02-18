@@ -42,12 +42,36 @@ By using this software, you agree to use it solely for learning purposes.
 - [Feature Requests](#feature-requests)
 - [License](#license)
 
+## This mod depends on the IBEAM IBKR webgateway or all the other alternative solutions.
+
+If you want to play with Interactive brokers, You'll need Docker, you'll also need an IBKR account.  But the standard Financials ai is still supported.  Via my broker I have access to all tickers I want, I cannot afford extra 200+ per month for market data.  So I want to combine API's .  It also seems like a good idea to not pull all information from 1 source.
+
+see the ibeam submodule on how to set it up, I found this to be one of the best Docker solutions available, and with some elbow grease you'll get SSL sorted out too with certs.  That's what the outputs directory is for.
+
+I redesigned the cache system as it was not transparant enough.  It is much easier to make a wrapper.  I chose redis but extending this system now is piece of cake without even working in other files.
+
+My own goal is to get a bunch of API's together to figure out the best and compare data.  The Backtester is also maintained.  I'm not sure what to do yet with this project, I have some doubts on hpw the calls work, some strange API behavior from Financials.  Also , the portofolio proved to be underdeveloped, I haven't tackled this too much but I hooked my wallet up, and thought that would be enough but it seemed to disregard what I had.   I've got a few more idea's to implement.
+
+On terms of logic, I'm not convinved that sentimentals make a huge difference and should have the weight it has.
+
+it needs:
+
+ - Redis server
+ - ibeam
+ - (ibind but that should be installed by poetry ), the submodule here is for dev purposes
+
 ## Setup
 
 Clone the repository:
 ```bash
-git clone https://github.com/virattt/ai-hedge-fund.git
+git clone --recurse-submodules https://github.com/virattt/ai-hedge-fund.git
+```
+
+Take care of the submodules
+```bash
 cd ai-hedge-fund
+git submodule update --init --recursive
+git submodule status
 ```
 
 1. Install Poetry (if not already installed):
