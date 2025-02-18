@@ -13,8 +13,6 @@ from utils.debugvariable import debug_variable_type
 import logging
 logger = logging.getLogger(__name__)
 
-from data.cache import get_cache
-
 from data.models import (
     CompanyNews,
     CompanyNewsResponse,

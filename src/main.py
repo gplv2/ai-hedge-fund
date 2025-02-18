@@ -32,14 +32,9 @@ from langchain_core.messages import HumanMessage
 from langgraph.graph import END, StateGraph
 from colorama import Fore, Back, Style, init
 import questionary
-<<<<<<< HEAD
 
 #from agents.ben_graham import ben_graham_agent
 #from agents.bill_ackman import bill_ackman_agent
-=======
-from agents.ben_graham import ben_graham_agent
-from agents.bill_ackman import bill_ackman_agent
->>>>>>> 185aa5a73653305a4b319b414610152ff63c49ff
 from agents.fundamentals import fundamentals_agent
 from agents.portfolio_manager import portfolio_management_agent
 from agents.technicals import technical_analyst_agent
