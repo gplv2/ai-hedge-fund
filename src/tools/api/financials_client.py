@@ -31,7 +31,7 @@ from data.models import (
 # You can import your Pydantic models if you have them.
 
 from utils.cache import redis_cache
-#@redis_cache(expire=60000)  # caches the result for 5 minutes
+#@redis_cache(expire=86400)  # caches the result for 1 day
 
 #//_cache = get_cache()
 
@@ -52,7 +52,7 @@ class FinancialsAPIClient:
         # Limit might be used to restrict to 5 tickers, etc.
         self.limit = self.config.get("limit", 5)
 
-    @redis_cache(expire=60000)  # caches the result for 5 minutes
+    @redis_cache(expire=86400)  # caches the result for 1 day
     def get_financial_metrics(self, ticker: str, end_date: str, period: str = "ttm", limit: int = 10,) -> list[FinancialMetrics]:
 #        # Check cache first
 #        if cached_data := get_cache_financial_metrics(ticker):
@@ -84,7 +84,7 @@ class FinancialsAPIClient:
         #set_cache_financial_metrics(ticker, financial_metrics)
         return financial_metrics
 
-    @redis_cache(expire=60000)  # caches the result for 5 minutes
+    @redis_cache(expire=86400)  # caches the result for 1 day
     def get_prices(self, ticker, start_date: str, end_date: str, max_retries=5, limit=5000):
         """Fetch price data from API with retry logic for rate limiting and server errors."""
         headers = {}
@@ -152,7 +152,7 @@ class FinancialsAPIClient:
 
         raise Exception("Max retries exceeded while attempting to get prices.")
 
-    @redis_cache(expire=60000)  # caches the result for 5 minutes
+    @redis_cache(expire=86400)  # caches the result for 1 day
     def search_line_items(self, ticker, line_items: list[str], end_date: str, period: str = "30d" , limit: int = 100) -> list[LineItem]:
       """Fetch line items from API."""
       # If not in cache or insufficient data, fetch from API
@@ -181,7 +181,7 @@ class FinancialsAPIClient:
 
       return search_results[:limit]
 
-    @redis_cache(expire=60000)  # caches the result for 5 minutes
+    @redis_cache(expire=86400)  # caches the result for 1 day
     def get_insider_trades(self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[InsiderTrade]:
         """Fetch insider trades from cache or API."""
         # Check cache first
@@ -247,7 +247,7 @@ class FinancialsAPIClient:
         return all_trades
 
 
-    @redis_cache(expire=60000)  # caches the result for 5 minutes
+    @redis_cache(expire=86400)  # caches the result for 1 day
     def get_company_news( self, ticker, end_date: str | None, start_date: str | None = None, limit: int = 500 ) -> list[CompanyNews]:
         """Fetch company news from cache or API."""
         #if cached_data := _cache.get_company_news(ticker):
