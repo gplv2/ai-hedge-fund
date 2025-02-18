@@ -6,14 +6,12 @@ class Price(BaseModel):
     close: float
     high: float
     low: float
-    volume: int
+    volume: float
     time: str
-
 
 class PriceResponse(BaseModel):
     ticker: str
     prices: list[Price]
-
 
 class FinancialMetrics(BaseModel):
     ticker: str
@@ -119,11 +117,9 @@ class Position(BaseModel):
     shares: int = 0
     ticker: str
 
-
 class Portfolio(BaseModel):
     positions: dict[str, Position]  # ticker -> Position mapping
     total_cash: float = 0.0
-
 
 class AnalystSignal(BaseModel):
     signal: str | None = None

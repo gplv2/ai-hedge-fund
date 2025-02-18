@@ -1,21 +1,54 @@
+import sys
+
+import logging
+import os
+
+# Set the logging level based on an environment variable
+DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
+LOG_LEVEL = logging.DEBUG
+
+logging.basicConfig(
+    #level=LOG_LEVEL,
+    level=logging.DEBUG,
+    #format="%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+)
+
+# Create a logger with a specific name
+logger = logging.getLogger(__name__)
+
+logger.info("Main started")
+
+# Create a console handler with formatting
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s [%(name)s] [%(levelname)s] %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+from tools.api import get_api_client, get_portfolio
+
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langgraph.graph import END, StateGraph
 from colorama import Fore, Back, Style, init
 import questionary
 
+#from agents.ben_graham import ben_graham_agent
+#from agents.bill_ackman import bill_ackman_agent
 from agents.fundamentals import fundamentals_agent
 from agents.portfolio_manager import portfolio_management_agent
 from agents.technicals import technical_analyst_agent
 from agents.risk_manager import risk_management_agent
 from agents.sentiment import sentiment_agent
-from agents.warren_buffett import warren_buffett_agent
+#from agents.warren_buffett import warren_buffett_agent
 from graph.state import AgentState
-from agents.valuation import valuation_agent
+#from agents.valuation import valuation_agent
 from utils.display import print_trading_output
-from utils.analysts import ANALYST_ORDER
+from utils.analysts import ANALYST_ORDER, get_analyst_nodes
 from utils.progress import progress
 from llm.models import LLM_ORDER, get_model_info
+
+from utils.timeutils import calculate_bar_period
 
 import argparse
 from datetime import datetime
@@ -23,8 +56,16 @@ from dateutil.relativedelta import relativedelta
 from tabulate import tabulate
 from utils.visualize import save_graph_as_png
 
+# Debug before loading the .env file
+logger.debug("Before load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
+logger.debug("Current working directory: %s", os.getcwd())
 # Load environment variables from .env file
-load_dotenv()
+# dotenv_path='/path/to/your/.env')
+load_dotenv(os.getcwd()+'/.env')
+
+# Debug after loading the .env file
+logger.debug("After load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
+
 
 init(autoreset=True)
 
@@ -102,18 +143,12 @@ def create_workflow(selected_analysts=None):
     workflow = StateGraph(AgentState)
     workflow.add_node("start_node", start)
 
+    # Get analyst nodes from the configuration
+    analyst_nodes = get_analyst_nodes()
+
     # Default to all analysts if none selected
     if selected_analysts is None:
-        selected_analysts = ["technical_analyst", "fundamentals_analyst", "sentiment_analyst", "valuation_analyst"]
-
-    # Dictionary of all available analysts
-    analyst_nodes = {
-        "technical_analyst": ("technical_analyst_agent", technical_analyst_agent),
-        "fundamentals_analyst": ("fundamentals_agent", fundamentals_agent),
-        "sentiment_analyst": ("sentiment_agent", sentiment_agent),
-        "valuation_analyst": ("valuation_agent", valuation_agent),
-        "warren_buffett": ("warren_buffett_agent", warren_buffett_agent),
-    }
+        selected_analysts = list(analyst_nodes.keys())
 
     # Add selected analyst nodes
     for analyst_key in selected_analysts:
@@ -144,6 +179,12 @@ if __name__ == "__main__":
         type=float,
         default=100000.0,
         help="Initial cash position. Defaults to 100000.0)"
+    )
+    parser.add_argument(
+        "--margin-requirement",
+        type=float,
+        default=0.0,
+        help="Initial margin requirement. Defaults to 0.0"
     )
     parser.add_argument("--tickers", type=str, required=True, help="Comma-separated list of stock ticker symbols")
     parser.add_argument(
@@ -180,8 +221,8 @@ if __name__ == "__main__":
     ).ask()
 
     if not choices:
-        print("You must select at least one analyst. Using all analysts by default.")
-        selected_analysts = None
+        print("\n\nInterrupt received. Exiting...")
+        sys.exit(0)
     else:
         selected_analysts = choices
         print(f"\nSelected analysts: {', '.join(Fore.GREEN + choice.title().replace('_', ' ') + Style.RESET_ALL for choice in choices)}\n")
@@ -199,9 +240,8 @@ if __name__ == "__main__":
     ).ask()
 
     if not model_choice:
-        print("Using default model: gpt-4o")
-        model_choice = "gpt-4o"
-        model_provider = "OpenAI"
+        print("\n\nInterrupt received. Exiting...")
+        sys.exit(0)
     else:
         # Get model info using the helper function
         model_info = get_model_info(model_choice)
@@ -249,9 +289,40 @@ if __name__ == "__main__":
     # Initialize portfolio with cash amount and stock positions
     portfolio = {
         "cash": args.initial_cash,  # Initial cash amount
-        "positions": {ticker: 0 for ticker in tickers}  # Initial stock positions
+        "margin_requirement": args.margin_requirement,  # Initial margin requirement
+        "positions": {
+            ticker: {
+                "long": 0,  # Number of shares held long
+                "short": 0,  # Number of shares held short
+                "long_cost_basis": 0.0,  # Average cost basis for long positions
+                "short_cost_basis": 0.0,  # Average price at which shares were sold short
+            } for ticker in tickers
+        },
+        "realized_gains": {
+            ticker: {
+                "long": 0.0,  # Realized gains from long positions
+                "short": 0.0,  # Realized gains from short positions
+            } for ticker in tickers
+        }
     }
 
+    #logger.debug("Portfolio1= %r", portfolio )
+#    try:
+#        # Factory returns IBKRClientWrapper or FinancialsAPIClient based on USE_IBKR
+#        client = get_api_client()
+#        # If using legacy financials client:
+#        porto = client.get_portfolio()
+#        #port = client.portfolio_to_df(portfolio)
+#
+#    except NotImplementedError:
+#        # In case IBKR client is chosen but get_financial_metrics is not supported:
+#        print("get_portfolio is not implemented for this API client.")
+#        portfolio = {
+#            "cash": args.initial_cash,  # Initial cash amount
+#            "positions": {ticker: 0 for ticker in tickers}  # Initial stock positions
+#        }
+    #logger.debug("Portfolio2= %r", porto )
+    logger.debug("Portfolio3= %r", portfolio )
     # Run the hedge fund
     result = run_hedge_fund(
         tickers=tickers,

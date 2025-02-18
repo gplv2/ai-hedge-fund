@@ -1,3 +1,6 @@
 [submodule "ibeam"]
 	path = ibeam
 	url = https://github.com/Voyz/ibeam.git
+[submodule "ibind"]
+	path = ibind
+	url = https://github.com/Voyz/ibind.git

@@ -40,3 +40,8 @@ Thumbs.db
 
 # graph
 *.png
+# Txt files
+*.txt
+
+# output dir
+output/

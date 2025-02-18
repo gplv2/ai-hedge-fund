@@ -1,4 +1,5 @@
 import math
+import sys
 
 from langchain_core.messages import HumanMessage
 
@@ -8,12 +9,23 @@ import json
 import pandas as pd
 import numpy as np
 
-from tools.api import get_prices, prices_to_df
-from utils.progress import progress
+import pprint
 
+#from tools.api import get_api_client, get_financial_metrics,get_prices,prices_to_df
+from tools.api import get_api_client, get_financial_metrics, get_prices, prices_to_df_alt
+
+from utils.progress import progress
+from utils.timeutils import convert_datetime, convert_to_date
+#from utils.timeutils import calculate_bar_period
+
+import logging
+logger = logging.getLogger(__name__)
 
 ##### Technical Analyst #####
 def technical_analyst_agent(state: AgentState):
+
+    logger.info("Calling technical agent AI")
+
     """
     Sophisticated technical analysis system that combines multiple trading strategies for multiple tickers:
     1. Trend Following
@@ -27,25 +39,58 @@ def technical_analyst_agent(state: AgentState):
     end_date = data["end_date"]
     tickers = data["tickers"]
 
+    logger.info("State data")
+    logger.debug(data)
+    logger.info("State data - EOF")
+
     # Initialize analysis for each ticker
     technical_analysis = {}
 
+    # Factory returns IBKRClientWrapper or FinancialsAPIClient based on USE_IBKR
+    client = get_api_client()
+#2025-02-17 18:14:34,333 [agents.technicals] [DEBUG] {'tickers': ['NVDA'], 'portfolio': {'cash': 100000, 'positions': {'NVDA': 0}, 'realized_gains': {'NVDA': 0}, 'cost_basis': {'NVDA': 0}}, 'start_date': '2024-01-20', 'end_date': '2024-02-19', 'analyst_signals': {}}
+    logger.info("Technical analysis")
+    logger.debug(data)
+    logger.debug(type(data))
+    logger.info("Technical analysis - EOF")
+
+    prices=None
+    # convert_to_date(date_str, fmt="%Y-%m-%d", return_type="str"):
+
     for ticker in tickers:
         progress.update_status("technical_analyst_agent", ticker, "Analyzing price data")
-
-        # Get the historical price data
-        prices = get_prices(
+        try:
+          logger.info("Getting prices for %s and %s",start_date, end_date)
+          # If using legacy financials client:
+          prices = client.get_prices(
             ticker=ticker,
             start_date=start_date,
             end_date=end_date,
-        )
+          )
+        except NotImplementedError:
+          # In case IBKR client is chosen but get_financial_metrics is not supported:
+          print("get_prices is not implemented for this API client.")
+
+        #logger.debug("TA : %s", prices)
+
+        # print dict to file
+        #with open("/home/glenn/repos/ai-hedge-fund/output/tech_analyst_prices.txt", "w", encoding="utf-8") as f:
+        #    f.write(pprint.pformat(prices))
 
         if not prices:
             progress.update_status("technical_analyst_agent", ticker, "Failed: No price data found")
             continue
 
+        logger.debug("prices: %s", prices)
+        logger.debug(type(prices))
         # Convert prices to a DataFrame
-        prices_df = prices_to_df(prices)
+        prices_df = client.prices_to_df_alt(prices)
+
+        logger.debug("prices_df: %s", prices)
+        logger.debug(prices_df)
+        logger.debug(type(prices_df))
+
+        #sys.exit(0)  # Exits with status code 0 (successful termination)
 
         progress.update_status("technical_analyst_agent", ticker, "Calculating trend signals")
         trend_signals = calculate_trend_signals(prices_df)
@@ -62,6 +107,8 @@ def technical_analyst_agent(state: AgentState):
         progress.update_status("technical_analyst_agent", ticker, "Statistical analysis")
         stat_arb_signals = calculate_stat_arb_signals(prices_df)
 
+        #logger.info(" prices for %s and %s",start_date, end_date)
+
         # Combine all signals using a weighted ensemble approach
         strategy_weights = {
             "trend": 0.25,
@@ -70,6 +117,8 @@ def technical_analyst_agent(state: AgentState):
             "volatility": 0.15,
             "stat_arb": 0.15,
         }
+
+        logger.debug("weights: %s", strategy_weights)
 
         progress.update_status("technical_analyst_agent", ticker, "Combining signals")
         combined_signal = weighted_signal_combination(
@@ -115,6 +164,7 @@ def technical_analyst_agent(state: AgentState):
                 },
             },
         }
+        logger.debug("TA : %s", technical_analysis[ticker])
         progress.update_status("technical_analyst_agent", ticker, "Done")
 
     # Create the technical analyst message
@@ -126,6 +176,7 @@ def technical_analyst_agent(state: AgentState):
     if state["metadata"]["show_reasoning"]:
         show_agent_reasoning(technical_analysis, "Technical Analyst")
 
+    logger.debug("HM : %s", message)
     # Add the signal to the analyst_signals list
     state["data"]["analyst_signals"]["technical_analyst_agent"] = technical_analysis
 
@@ -143,6 +194,12 @@ def calculate_trend_signals(prices_df):
     ema_8 = calculate_ema(prices_df, 8)
     ema_21 = calculate_ema(prices_df, 21)
     ema_55 = calculate_ema(prices_df, 55)
+    ema_200 = calculate_ema(prices_df, 200)
+
+    logger.debug("EMA8  : %s", ema_8)
+    logger.debug("EMA21 : %s", ema_21)
+    logger.debug("EMA55 : %s", ema_55)
+    logger.debug("EMA200: %s", ema_200)
 
     # Calculate ADX for trend strength
     adx = calculate_adx(prices_df, 14)
@@ -150,9 +207,14 @@ def calculate_trend_signals(prices_df):
     # Determine trend direction and strength
     short_trend = ema_8 > ema_21
     medium_trend = ema_21 > ema_55
+    long_trend = ema_55 > ema_200
+    logger.debug("short trend : %s", short_trend)
+    logger.debug("medium trend  : %s", medium_trend)
+    logger.debug("long trend  : %s", long_trend)
 
     # Combine signals with confidence weighting
     trend_strength = adx["adx"].iloc[-1] / 100.0
+    logger.debug("trend strength : %s", trend_strength)
 
     if short_trend.iloc[-1] and medium_trend.iloc[-1]:
         signal = "bullish"
