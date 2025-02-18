@@ -33,8 +33,8 @@ from langgraph.graph import END, StateGraph
 from colorama import Fore, Back, Style, init
 import questionary
 
-#from agents.ben_graham import ben_graham_agent
-#from agents.bill_ackman import bill_ackman_agent
+from agents.ben_graham import ben_graham_agent
+from agents.bill_ackman import bill_ackman_agent
 from agents.fundamentals import fundamentals_agent
 from agents.portfolio_manager import portfolio_management_agent
 from agents.technicals import technical_analyst_agent
