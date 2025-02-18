@@ -33,6 +33,12 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
 )
 
+# silence font thing
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+#logging.getLogger('matplotlib').disabled = True
+# Suppress debug logs from PIL (Pillow)
+logging.getLogger("PIL").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 #from utils.cache import redis_cache
@@ -774,4 +780,4 @@ if __name__ == "__main__":
     )
 
     performance_metrics = backtester.run_backtest()
-    #performance_df = backtester.analyze_performance()
+    performance_df = backtester.analyze_performance()
