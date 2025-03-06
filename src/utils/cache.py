@@ -18,7 +18,7 @@ def custom_serializer(o):
         return pydantic_encoder(o)
     except Exception:
         return str(o)
-    
+
 def redis_cache(expire=600):
     def decorator(func):
         @functools.wraps(func)
@@ -52,10 +52,10 @@ def redis_cache(expire=600):
                 if isinstance(data, dict) and data.get('__dataframe__'):
                     return pd.DataFrame(**data['data'])
                 return data
-            
+
             # Call the actual function.
             result = func(*args, **kwargs)
-            
+
             # Serialize the result:
             if isinstance(result, pd.DataFrame):
                 # Convert the DataFrame using the 'split' orientation.
@@ -66,7 +66,7 @@ def redis_cache(expire=600):
                 }, default=custom_serializer)
             else:
                 serialized = json.dumps(result, default=pydantic_encoder)
-            
+
             r.set(key, serialized, ex=expire)
             return result
         return wrapper
