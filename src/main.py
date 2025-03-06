@@ -5,7 +5,7 @@ import os
 
 # Set the logging level based on an environment variable
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
-LOG_LEVEL = logging.DEBUG
+#LOG_LEVEL = logging.DEBUG
 
 logging.basicConfig(
     #level=LOG_LEVEL,
@@ -13,6 +13,15 @@ logging.basicConfig(
     #format="%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     format="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
 )
+
+# silence font thing
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+#logging.getLogger('matplotlib').disabled = True
+# Suppress debug logs from PIL (Pillow)
+logging.getLogger("PIL").setLevel(logging.WARNING)
+logging.getLogger("openai._base_client").setLevel(logging.WARNING)
+logging.getLogger("httpcore.http11").setLevel(logging.WARNING)
+logging.getLogger("httpcore.connection").setLevel(logging.WARNING)
 
 # Create a logger with a specific name
 logger = logging.getLogger(__name__)

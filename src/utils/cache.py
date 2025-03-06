@@ -6,14 +6,6 @@ import pandas as pd
 from pprint import pprint
 from pydantic.json import pydantic_encoder
 
-# Set up Redis connection (configure as needed)
-r = redis.Redis(host='localhost', port=6379, db=0)
-
-#def custom_serializer(o):
-#    if isinstance(o, pd.Timestamp):
-#        return o.isoformat()
-#    raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
-
 # Set up Redis connection
 r = redis.Redis(host='localhost', port=6379, db=0)
 
@@ -79,3 +71,4 @@ def redis_cache(expire=600):
             return result
         return wrapper
     return decorator
+

@@ -2,6 +2,7 @@ from langchain_core.messages import HumanMessage
 from graph.state import AgentState, show_agent_reasoning
 from utils.progress import progress
 import json
+import sys
 
 from tools.api import get_financial_metrics, get_market_cap, get_market_cap, search_line_items
 
@@ -62,11 +63,15 @@ def valuation_agent(state: AgentState):
 
         progress.update_status("valuation_agent", ticker, "Calculating owner earnings")
         # Calculate working capital change
-        logger.info('current_financial_line_item')
-        logger.debug(type(current_financial_line_item))
+        logger.debug('current_financial_line_item')
         logger.debug(current_financial_line_item)
+        logger.debug(type(current_financial_line_item))
+        logger.debug('current_financial_line_item')
 
-        working_capital_change = current_financial_line_item.get('working_capital') - previous_financial_line_item.get('working_capital')
+
+        working_capital_change = current_financial_line_item.working_capital - previous_financial_line_item.working_capital
+
+        sys.exit()
 
         # Owner Earnings Valuation (Buffett Method)
         owner_earnings_value = calculate_owner_earnings_value(

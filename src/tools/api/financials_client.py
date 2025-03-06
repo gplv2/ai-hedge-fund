@@ -343,8 +343,8 @@ class FinancialsAPIClient:
 
     def prices_to_df_alt2(self, prices: list) -> pd.DataFrame:
         """Convert prices to a DataFrame."""
-        logger.debug(prices)
-        logger.debug(type(prices))
+        #logger.debug(prices)
+        #logger.debug(type(prices))
         # Convert each element appropriately:
         processed_prices = []
         for p in prices:
@@ -418,10 +418,10 @@ class FinancialsAPIClient:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
 
         df.sort_index(inplace=True)
-        logger.info("debug df:")
-        logger.debug(df)
+        #logger.info("debug df:")
+        #logger.debug(df)
         logger.debug(type(df))
-        logger.debug("df %d",len(df))
+        logger.debug("df len : %d",len(df))
 
         return df
 
@@ -435,30 +435,30 @@ class FinancialsAPIClient:
 
         Each record is expected to have a date field stored under "time" or "date".
         """
-        logger.debug("prices1: ")
-        logger.debug(prices)
-        logger.debug(type(prices))
-        logger.debug("prices1 %d",len(prices))
+        #logger.debug("prices1: ")
+        #logger.debug(prices)
+        #logger.debug(type(prices))
+        #logger.debug("prices1 %d",len(prices))
 
         # If the input is a dict with a "prices" key, extract the list
         if isinstance(prices, dict) and "prices" in prices:
             prices = prices["prices"]
 
-        logger.debug("prices: ")
-        logger.debug(prices)
-        logger.debug(type(prices))
-        logger.debug("prices %d",len(prices))
+        #logger.debug("prices: ")
+        #logger.debug(prices)
+        #logger.debug(type(prices))
+        #logger.debug("prices %d",len(prices))
         # Convert each record to a dict. If it's a Price model, use .model_dump(); otherwise, assume it's already a dict.
         records = [p.model_dump() if hasattr(p, "model_dump") else p for p in prices]
         df = pd.DataFrame(records)
 
-        logger.debug("records: ")
-        logger.debug(records)
-        logger.debug(type(records))
-        logger.debug("records %d",len(records))
+        #logger.debug("records: ")
+        #logger.debug(records)
+        #logger.debug(type(records))
+        #logger.debug("records %d",len(records))
 
-        logger.debug("df: ")
-        logger.debug(df)
+        #logger.debug("df: ")
+        #logger.debug(df)
         logger.debug(type(df))
         logger.debug("df %d",len(df))
 
@@ -486,8 +486,8 @@ class FinancialsAPIClient:
     # Update the get_price_data function to use the new functions
     def get_price_data(self, ticker, start_date: str, end_date: str) -> pd.DataFrame:
         prices = self.get_prices(ticker, start_date, end_date)
-        logger.debug(prices)
-        logger.debug(type(prices))
+        #logger.debug(prices)
+        #logger.debug(type(prices))
         return self.prices_to_df_alt(prices)
 
     def get_ledger(self):
