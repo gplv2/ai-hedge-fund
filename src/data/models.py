@@ -15,7 +15,6 @@ class PriceResponse(BaseModel):
 
 class FinancialMetrics(BaseModel):
     ticker: str
-    calendar_date: str
     report_period: str
     period: str
     currency: str
