@@ -43,6 +43,18 @@ from langgraph.graph import END, StateGraph
 from colorama import Fore, Back, Style, init
 import questionary
 
+# Debug before loading the .env file
+logger.debug("Before load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
+logger.debug("Current working directory: %s", os.getcwd())
+# Load environment variables from .env file
+# dotenv_path='/path/to/your/.env')
+load_dotenv(os.getcwd()+'/.env')
+
+# Debug after loading the .env file
+logger.debug("After load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
+
+from agents.cathie_wood import cathie_wood_agent
+from agents.charlie_munger import charlie_munger_agent
 from agents.ben_graham import ben_graham_agent
 from agents.bill_ackman import bill_ackman_agent
 from agents.fundamentals import fundamentals_agent
@@ -50,9 +62,9 @@ from agents.portfolio_manager import portfolio_management_agent
 from agents.technicals import technical_analyst_agent
 from agents.risk_manager import risk_management_agent
 from agents.sentiment import sentiment_agent
-#from agents.warren_buffett import warren_buffett_agent
+from agents.warren_buffett import warren_buffett_agent
 from graph.state import AgentState
-#from agents.valuation import valuation_agent
+from agents.valuation import valuation_agent
 from utils.display import print_trading_output
 from utils.analysts import ANALYST_ORDER, get_analyst_nodes
 from utils.progress import progress
@@ -65,16 +77,6 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from tabulate import tabulate
 from utils.visualize import save_graph_as_png
-
-# Debug before loading the .env file
-logger.debug("Before load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
-logger.debug("Current working directory: %s", os.getcwd())
-# Load environment variables from .env file
-# dotenv_path='/path/to/your/.env')
-load_dotenv(os.getcwd()+'/.env')
-
-# Debug after loading the .env file
-logger.debug("After load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
 
 
 init(autoreset=True)

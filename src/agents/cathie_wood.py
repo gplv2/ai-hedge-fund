@@ -1,13 +1,17 @@
 from langchain_openai import ChatOpenAI
 from graph.state import AgentState, show_agent_reasoning
-from tools.api import get_financial_metrics, get_market_cap, search_line_items
+from tools.api import get_api_client, get_financial_metrics, get_market_cap, search_line_items
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel
 import json
+import sys
 from typing_extensions import Literal
 from utils.progress import progress
 from utils.llm import call_llm
+
+import logging
+logger = logging.getLogger(__name__)
 
 class CathieWoodSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
@@ -34,6 +38,8 @@ def cathie_wood_agent(state: AgentState):
         progress.update_status("cathie_wood_agent", ticker, "Fetching financial metrics")
         # You can adjust these parameters (period="annual"/"ttm", limit=5/10, etc.)
         metrics = get_financial_metrics(ticker, end_date, period="annual", limit=5)
+        logger.debug(type(metrics))
+        logger.debug(metrics)
 
         progress.update_status("cathie_wood_agent", ticker, "Gathering financial line items")
         # Request multiple periods of data (annual or TTM) for a more robust view.
@@ -58,9 +64,13 @@ def cathie_wood_agent(state: AgentState):
             period="annual",
             limit=5
         )
+        logger.debug(type(financial_line_items[0]))
+        logger.debug(financial_line_items[0])
 
         progress.update_status("cathie_wood_agent", ticker, "Getting market cap")
         market_cap = get_market_cap(ticker, end_date)
+        logger.debug(type(market_cap))
+        logger.debug(market_cap)
 
         progress.update_status("cathie_wood_agent", ticker, "Analyzing disruptive potential")
         disruptive_analysis = analyze_disruptive_potential(metrics, financial_line_items)
@@ -142,6 +152,12 @@ def analyze_disruptive_potential(metrics: list, financial_line_items: list) -> d
             "details": "Insufficient data to analyze disruptive potential"
         }
 
+    #2025-03-07 21:41:42,985 - agents.cathie_wood - DEBUG - [cathie_wood.py:156] - <class 'data.models.LineItem'>
+    #2025-03-07 21:41:42,985 - agents.cathie_wood - DEBUG - [cathie_wood.py:157] - <class 'list'>
+    logger.debug(financial_line_items)
+    logger.debug(type(financial_line_items[0]))
+    logger.debug(type(financial_line_items))
+    #sys.exit()
     # 1. Revenue Growth Analysis - Check for accelerating growth
     revenues = [item.revenue for item in financial_line_items if item.revenue is not None]
     if len(revenues) >= 3:  # Need at least 3 periods to check acceleration

@@ -1,74 +1,97 @@
+import msgpack
 import redis
-import functools
-import json
+from pydantic import BaseModel
+from functools import wraps
+from typing import List, Union, Any
 import hashlib
-import pandas as pd
-from pprint import pprint
-from pydantic.json import pydantic_encoder
+import json
+import inspect
+from collections.abc import Mapping
 
-# Set up Redis connection
-r = redis.Redis(host='localhost', port=6379, db=0)
 
-def custom_serializer(o):
-    if isinstance(o, pd.Timestamp):
-        return o.isoformat()  # Convert Timestamp to ISO string
-    # You can add more cases if needed.
-    # Fall back to the Pydantic encoder for other objects.
-    try:
-        return pydantic_encoder(o)
-    except Exception:
-        return str(o)
+# Setup Redis connection
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=False)
 
-def redis_cache(expire=600):
+# Helper function to serialize a Pydantic model to msgpack
+def serialize_pydantic(model: Any) -> bytes:
+    if isinstance(model, list):
+        return msgpack.packb([item.dict() if isinstance(item, BaseModel) else item for item in model], use_bin_type=True)
+    elif isinstance(model, dict):
+        return msgpack.packb({k: v.dict() if isinstance(v, BaseModel) else v for k, v in model.items()}, use_bin_type=True)
+    elif isinstance(model, BaseModel):
+        return msgpack.packb(model.dict(), use_bin_type=True)
+    else:
+        return msgpack.packb(model, use_bin_type=True)  # Fallback for non-model types
+
+
+# Helper function to recursively deserialize msgpack data to a Pydantic model
+def deserialize_pydantic(data: bytes, model_class: BaseModel) -> Any:
+    deserialized_data = msgpack.unpackb(data, raw=False)
+
+    # Handle the case when the data is a list of models
+    if isinstance(deserialized_data, list):
+        return [deserialize_pydantic_item(item, model_class) for item in deserialized_data]
+    
+    # Handle single model
+    return deserialize_pydantic_item(deserialized_data, model_class)
+
+
+# Recursive deserialization for individual items
+def deserialize_pydantic_item(item: Any, model_class: BaseModel) -> BaseModel:
+    if isinstance(item, dict):
+        # If the item is a dictionary, we use model_class to create an instance
+        return model_class(**item)
+    elif isinstance(item, list):
+        # If the item is a list, we deserialize the items in the list
+        return [deserialize_pydantic_item(i, model_class) for i in item]
+    else:
+        # For any other cases, directly return the item (not a Pydantic model)
+        return item
+
+
+# Generate a cache key based on the function name and arguments
+def generate_cache_key(func, args, kwargs):
+    cache_key = f"{func.__name__}:{json.dumps((args[1:], kwargs), sort_keys=True)}"
+    return hashlib.sha256(cache_key.encode()).hexdigest()
+
+# The decorator to cache API responses in Redis
+def cache_api_response(timeout: int = 3600):
     def decorator(func):
-        @functools.wraps(func)
+        @wraps(func)
         def wrapper(*args, **kwargs):
-            key_data = {
-                'func': func.__name__,
-                'args': args,
-                'kwargs': kwargs
-            }
-            pprint(key_data)
-            # {'args': (<tools.api.financials_client.FinancialsAPIClient object at 0x7f5075221820>,
-            # 'NVDA'),
-            # 'func': 'get_company_news',
-            # 'kwargs': {'end_date': '2025-02-17',
-            # 'limit': 1000,
-            # 'start_date': '2024-02-17'}}
+            cache_key = generate_cache_key(func, args, kwargs)
 
-            # Generate a unique cache key; combine kwargs and args and func
-            key_data = {
-                'func': func.__name__,
-                "args": args[1:],  # skip the first argument
-                "kwargs": kwargs
-            }
-            key_hash = hashlib.md5(json.dumps(key_data, sort_keys=True, default=str).encode()).hexdigest()
-            key = f"cache:{func.__name__}:{key_hash}"
-            #key = f"cache:{hashlib.md5(json.dumps(key_data, sort_keys=True, default=str).encode()).hexdigest()}"
-            cached = r.get(key)
-            if cached:
-                data = json.loads(cached)
-                # If data is stored as a DataFrame, check for our marker.
-                if isinstance(data, dict) and data.get('__dataframe__'):
-                    return pd.DataFrame(**data['data'])
-                return data
+            # Check if data is cached in Redis
+            cached_data = redis_client.get(cache_key)
+            if cached_data:
+                return_type = inspect.signature(func).return_annotation
 
-            # Call the actual function.
+                if hasattr(return_type, '__origin__') and return_type.__origin__ == list:
+                    # Handle List[Model]
+                    model_class = return_type.__args__[0]
+                    return deserialize_pydantic(cached_data, model_class)
+                elif isinstance(return_type, type) and issubclass(return_type, BaseModel):
+                    # Handle a single BaseModel
+                    return deserialize_pydantic(cached_data, return_type)
+
+            # If no cache, make the API call and cache the result
             result = func(*args, **kwargs)
 
-            # Serialize the result:
-            if isinstance(result, pd.DataFrame):
-                # Convert the DataFrame using the 'split' orientation.
-                # Use our custom serializer to handle Timestamps.
-                serialized = json.dumps({
-                    '__dataframe__': True,
-                    'data': result.to_dict(orient='split')
-                }, default=custom_serializer)
+            # Serialize the result (handle single or list of models)
+            if isinstance(result, list):
+                model_class = result[0].__class__ if result else None
+                if model_class:
+                    serialized_data = serialize_pydantic(result)
+            elif isinstance(result, BaseModel):
+                model_class = result.__class__
+                serialized_data = serialize_pydantic(result)
             else:
-                serialized = json.dumps(result, default=pydantic_encoder)
+                serialized_data = serialize_pydantic(result)  # Serialize any other types
 
-            r.set(key, serialized, ex=expire)
+            # Cache the serialized data in Redis with the generated key
+            redis_client.setex(cache_key, timeout, serialized_data)
+
             return result
+
         return wrapper
     return decorator
-

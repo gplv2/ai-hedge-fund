@@ -6,6 +6,7 @@ import utils
 import requests
 import pandas as pd
 from pprint import pprint
+from pydantic import BaseModel, TypeAdapter
 
 from utils.timeutils import convert_to_date, extract_date_limits
 from utils.debugvariable import debug_variable_type
@@ -30,16 +31,7 @@ from data.models import (
 # For demonstration, we treat the JSON as a dictionary.
 # You can import your Pydantic models if you have them.
 
-from utils.cache import redis_cache
-#@redis_cache(expire=86400)  # caches the result for 1 day
-
-#//_cache = get_cache()
-
-#def get_cache_financial_metrics(ticker):
-    #return _cache.get(ticker)
-
-#def set_cache_financial_metrics(ticker, data):
-    #_cache[ticker] = data
+from utils.cache import cache_api_response
 
 class FinancialsAPIClient:
     def __init__(self, config=None):
@@ -47,14 +39,8 @@ class FinancialsAPIClient:
         # Limit might be used to restrict to 5 tickers, etc.
         self.limit = self.config.get("limit", 5)
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    @cache_api_response(timeout=600)
     def get_financial_metrics(self, ticker: str, end_date: str, period: str = "ttm", limit: int = 10,) -> list[FinancialMetrics]:
-#        # Check cache first
-#        if cached_data := get_cache_financial_metrics(ticker):
-#            filtered_data = [metric for metric in cached_data if metric["report_period"] <= end_date]
-#            filtered_data.sort(key=lambda x: x["report_period"], reverse=True)
-#            if filtered_data:
-#                return filtered_data[:limit]
 
         headers = {}
         if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
@@ -79,7 +65,7 @@ class FinancialsAPIClient:
         #set_cache_financial_metrics(ticker, financial_metrics)
         return financial_metrics
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    @cache_api_response(timeout=600)
     def get_prices(self, ticker, start_date: str, end_date: str, max_retries=5, limit=5000):
         """Fetch price data from API with retry logic for rate limiting and server errors."""
         headers = {}
@@ -147,7 +133,7 @@ class FinancialsAPIClient:
 
         raise Exception("Max retries exceeded while attempting to get prices.")
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    @cache_api_response(timeout=600)
     def search_line_items(self, ticker, line_items: list[str], end_date: str, period: str = "30d" , limit: int = 100) -> list[LineItem]:
       """Fetch line items from API."""
       # If not in cache or insufficient data, fetch from API
@@ -176,7 +162,7 @@ class FinancialsAPIClient:
 
       return search_results[:limit]
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    @cache_api_response(timeout=600)
     def get_insider_trades(self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[InsiderTrade]:
         """Fetch insider trades from cache or API."""
         # Check cache first
@@ -242,7 +228,7 @@ class FinancialsAPIClient:
         return all_trades
 
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    @cache_api_response(timeout=600)
     def get_company_news( self, ticker, end_date: str | None, start_date: str | None = None, limit: int = 500 ) -> list[CompanyNews]:
         """Fetch company news from cache or API."""
         #if cached_data := _cache.get_company_news(ticker):
@@ -322,8 +308,9 @@ class FinancialsAPIClient:
         """Fetch market cap from the API."""
         financial_metrics = self.get_financial_metrics(ticker, end_date)
         #market_cap = financial_metrics[0].market_cap
-        market_cap = financial_metrics[0].get('market_cap')
+        market_cap = financial_metrics[0].market_cap
         pprint(market_cap)
+        pprint(type(market_cap))
         if not market_cap:
             return None
 
@@ -501,3 +488,9 @@ class FinancialsAPIClient:
 
     def portfolio_to_df(self):
         raise NotImplementedError("Financials.AI client does not implement positions")
+
+# cache result set model hint
+
+#FinancialsAPIClient.get_financial_metrics.model_class = list[FinancialMetrics]
+#FinancialsAPIClient.get_prices.model_class = list[PriceResponse]
+#FinancialsAPIClient.search_line_items.model_class = list[LineItem]

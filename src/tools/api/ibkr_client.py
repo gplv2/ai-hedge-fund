@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize logging for ibind
 # ibind_logs_initialize()
-from utils.cache import redis_cache
+from utils.cache import cache_api_response
 
 from data.models import (
     CompanyNews,
@@ -378,7 +378,7 @@ class IBKRClientWrapper:
         df.sort_index(inplace=True)
         return df
 
-    @redis_cache(expire=86400)  # caches the result for 1 day
+    #@redis_cache(expire=86400)  # caches the result for 1 day
     def get_first_us_conid(self, ticker_data):
         for entry in ticker_data:
             if entry.get('assetClass') == 'STK':
