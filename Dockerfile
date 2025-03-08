@@ -5,7 +5,8 @@ WORKDIR /app/
 RUN apt-get update && apt-get install -y curl
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:$PATH"
-COPY pyproject.toml poetry.lock ./
-RUN poetry config virtualenvs.create false
+COPY pyproject.toml uv.lock ./
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN uv sync
 # RUN poetry install --no-interaction --no-ansi
 COPY . .
