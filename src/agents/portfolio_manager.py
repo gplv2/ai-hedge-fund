@@ -1,4 +1,3 @@
-import json
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -8,6 +7,7 @@ from typing_extensions import Literal
 from utils.progress import progress
 from utils.llm import call_llm
 
+import json
 import logging
 logger = logging.getLogger(__name__)
 

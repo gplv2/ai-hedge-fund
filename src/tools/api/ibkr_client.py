@@ -2,10 +2,9 @@ import os
 import json
 import requests
 import pandas as pd
-from pprint import pprint,pformat
-from ibind import IbkrClient, ibind_logs_initialize
+from pprint import pprint
+from ibind import IbkrClient
 from utils.timeutils import calculate_bar_period
-from utils.timeutils import convert_datetime
 from utils.timeutils import convert_datetimes
 from utils.debugvariable import debug_variable_type
 
@@ -14,22 +13,14 @@ logger = logging.getLogger(__name__)
 
 # Initialize logging for ibind
 # ibind_logs_initialize()
-from utils.cache import cache_api_response
 
 from data.models import (
     CompanyNews,
-    CompanyNewsResponse,
-    FinancialMetrics,
-    FinancialMetricsResponse,
     Price,
     PriceResponse,
     Portfolio,
-    Position,
-#    PortFolioReponse,
     LineItem,
-    LineItemResponse,
     InsiderTrade,
-    InsiderTradeResponse,
 )
 
 # Assume FinancialMetricsResponse and FinancialMetrics are defined (e.g., via Pydantic)

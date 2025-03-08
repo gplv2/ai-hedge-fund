@@ -15,11 +15,11 @@ from utils.timeutils import convert_datetime
 from main import run_hedge_fund
 from tools.api import (
     get_api_client,
-    get_company_news,
+#    get_company_news,
     get_price_data,
-    get_prices,
-    get_financial_metrics,
-    get_insider_trades,
+#    get_prices,
+#    get_financial_metrics,
+#    get_insider_trades,
 )
 from utils.display import print_backtest_results, format_backtest_row
 from typing_extensions import Callable

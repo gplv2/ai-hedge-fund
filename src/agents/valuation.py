@@ -2,9 +2,8 @@ from langchain_core.messages import HumanMessage
 from graph.state import AgentState, show_agent_reasoning
 from utils.progress import progress
 import json
-import sys
 
-from tools.api import get_financial_metrics, get_market_cap, get_market_cap, search_line_items
+from tools.api import get_financial_metrics, get_market_cap, search_line_items
 
 import logging
 logger = logging.getLogger(__name__)

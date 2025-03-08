@@ -1,12 +1,9 @@
 import os
-import sys
 import re
 import time
-import utils
 import requests
 import pandas as pd
 from pprint import pprint
-from pydantic import BaseModel, TypeAdapter
 
 from utils.timeutils import convert_to_date, extract_date_limits
 from utils.debugvariable import debug_variable_type
@@ -18,7 +15,6 @@ from data.models import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,
-    FinancialMetricsResponse,
     Price,
     PriceResponse,
     LineItem,

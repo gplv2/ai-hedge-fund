@@ -1,5 +1,4 @@
 import math
-import sys
 
 from langchain_core.messages import HumanMessage
 
@@ -9,12 +8,10 @@ import json
 import pandas as pd
 import numpy as np
 
-import pprint
-
-from tools.api import get_api_client, get_financial_metrics, get_prices, prices_to_df_alt
+from tools.api import get_api_client
 
 from utils.progress import progress
-from utils.timeutils import convert_datetime, convert_to_date
+#from utils.timeutils import convert_datetime, convert_to_date
 #from utils.timeutils import calculate_bar_period
 
 import logging

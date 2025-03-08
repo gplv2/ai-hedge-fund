@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from pprint import pprint
 
 def convert_to_date(date_str, fmt="%Y-%m-%d", return_type="datetime"):

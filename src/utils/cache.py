@@ -2,11 +2,10 @@ import msgpack
 import redis
 from pydantic import BaseModel
 from functools import wraps
-from typing import List, Union, Any
+from typing import Any
 import hashlib
 import json
 import inspect
-from collections.abc import Mapping
 
 
 # Setup Redis connection
