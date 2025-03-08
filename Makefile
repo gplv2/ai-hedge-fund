@@ -19,3 +19,6 @@ stop:
 clean: stop
 	docker rm $(CONTAINER_NAME)
 	
+lint:
+	uvx ruff check
+	
