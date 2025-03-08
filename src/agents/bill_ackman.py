@@ -137,7 +137,7 @@ def analyze_business_quality(metrics: list, financial_line_items: list) -> dict:
         }
 
     # 1. Multi-period revenue growth analysis
-    revenues = [item.get('revenue') for item in financial_line_items if item.get('revenue') is not None]
+    revenues = [item.revenue for item in financial_line_items if item.revenue is not None]
     if len(revenues) >= 2:
         # Check if overall revenue grew from first to last
         initial, final = revenues[0], revenues[-1]
@@ -157,8 +157,8 @@ def analyze_business_quality(metrics: list, financial_line_items: list) -> dict:
 
     # 2. Operating margin and free cash flow consistency
     # We'll check if operating_margin or free_cash_flow are consistently positive/improving
-    fcf_vals = [item.get('free_cash_flow') for item in financial_line_items if item.get('free_cash_flow') is not None]
-    op_margin_vals = [item.get('operating_margin') for item in financial_line_items if item.get('operating_margin') is not None]
+    fcf_vals = [item.free_cash_flow for item in financial_line_items if item.free_cash_flow is not None]
+    op_margin_vals = [item.operating_margin for item in financial_line_items if item.operating_margin is not None]
 
     if op_margin_vals:
         # Check if the majority of operating margins are > 15%
@@ -185,11 +185,11 @@ def analyze_business_quality(metrics: list, financial_line_items: list) -> dict:
     # 3. Return on Equity (ROE) check from the latest metrics
     # (If you want multi-period ROE, you'd need that in financial_line_items as well.)
     latest_metrics = metrics[0]
-    if latest_metrics.get('return_on_equity') and latest_metrics.get('return_on_equity') > 0.15:
+    if latest_metrics.return_on_equity and latest_metrics.return_on_equity > 0.15:
         score += 2
-        details.append(f"High ROE of {latest_metrics.get('return_on_equity'):.1%}, indicating potential moat.")
-    elif latest_metrics.get('return_on_equity'):
-        details.append(f"ROE of {latest_metrics.get('return_on_equity'):.1%} is not indicative of a strong moat.")
+        details.append(f"High ROE of {latest_metrics.return_on_equity:.1%}, indicating potential moat.")
+    elif latest_metrics.return_on_equity:
+        details.append(f"ROE of {latest_metrics.return_on_equity:.1%} is not indicative of a strong moat.")
     else:
         details.append("ROE data not available in metrics.")
 
@@ -216,7 +216,7 @@ def analyze_financial_discipline(metrics: list, financial_line_items: list) -> d
 
     # 1. Multi-period debt ratio or debt_to_equity
     # Check if the company’s leverage is stable or improving
-    debt_to_equity_vals = [item.get('debt_to_equity') for item in financial_line_items if item.get('debt_to_equity') is not None]
+    debt_to_equity_vals = [item.debt_to_equity for item in financial_line_items if item.debt_to_equity is not None]
 
     # If we have multi-year data, see if D/E ratio has gone down or stayed <1 across most periods
     if debt_to_equity_vals:
@@ -230,8 +230,8 @@ def analyze_financial_discipline(metrics: list, financial_line_items: list) -> d
         # Fallback to total_liabilities/total_assets if D/E not available
         liab_to_assets = []
         for item in financial_line_items:
-            if item.get('total_liabilities') and item.get('total_assets') and item.get('total_assets') > 0:
-                liab_to_assets.append(item.get('total_liabilities') / item.get('total_assets'))
+            if item.total_liabilities and item.total_assets and item.total_assets > 0:
+                liab_to_assets.append(item.total_liabilities / item.total_assets)
 
         if liab_to_assets:
             below_50pct_count = sum(1 for ratio in liab_to_assets if ratio < 0.5)
@@ -245,7 +245,7 @@ def analyze_financial_discipline(metrics: list, financial_line_items: list) -> d
 
     # 2. Capital allocation approach (dividends + share counts)
     # If the company paid dividends or reduced share count over time, it may reflect discipline
-    dividends_list = [item.get('dividends_and_other_cash_distributions') for item in financial_line_items if item.get('dividends_and_other_cash_distributions') is not None]
+    dividends_list = [item.dividends_and_other_cash_distributions for item in financial_line_items if item.dividends_and_other_cash_distributions is not None]
     if dividends_list:
         # Check if dividends were paid (i.e., negative outflows to shareholders) in most periods
         paying_dividends_count = sum(1 for d in dividends_list if d < 0)
@@ -259,7 +259,7 @@ def analyze_financial_discipline(metrics: list, financial_line_items: list) -> d
 
     # Check for decreasing share count (simple approach):
     # We can compare first vs last if we have at least two data points
-    shares = [item.get('outstanding_shares') for item in financial_line_items if item.get('outstanding_shares') is not None]
+    shares = [item.outstanding_shares for item in financial_line_items if item.outstanding_shares is not None]
     if len(shares) >= 2:
         if shares[-1] < shares[0]:
             score += 1
@@ -290,7 +290,7 @@ def analyze_valuation(financial_line_items: list, market_cap: float) -> dict:
 
     # Example: use the most recent item for FCF
     latest = financial_line_items[-1]  # the last one is presumably the most recent
-    fcf = latest.get('free_cash_flow') if latest.get('free_cash_flow') else 0
+    fcf = latest.free_cash_flow if latest.free_cash_flow else 0
 
     # For demonstration, let's do a naive approach:
     growth_rate = 0.06

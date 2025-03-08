@@ -108,8 +108,8 @@ def analyze_earnings_stability(metrics: list, financial_line_items: list) -> dic
 
     eps_vals = []
     for item in financial_line_items:
-        if item.get('earnings_per_share') is not None:
-            eps_vals.append(item.get('earnings_per_share'))
+        if item.earnings_per_share is not None:
+            eps_vals.append(item.earnings_per_share)
 
     if len(eps_vals) < 2:
         details.append("Not enough multi-year EPS data.")
@@ -149,10 +149,10 @@ def analyze_financial_strength(metrics: list, financial_line_items: list) -> dic
         return {"score": score, "details": "No data for financial strength analysis"}
 
     latest_item = financial_line_items[-1]
-    total_assets = latest_item.get('total_assets') or 0
-    total_liabilities = latest_item.get('total_liabilities') or 0
-    current_assets = latest_item.get('current_assets') or 0
-    current_liabilities = latest_item.get('current_liabilities') or 0
+    total_assets = latest_item.total_assets or 0
+    total_liabilities = latest_item.total_liabilities or 0
+    current_assets = latest_item.current_assets or 0
+    current_liabilities = latest_item.current_liabilities or 0
 
     # 1. Current ratio
     if current_liabilities > 0:
@@ -183,7 +183,7 @@ def analyze_financial_strength(metrics: list, financial_line_items: list) -> dic
         details.append("Cannot compute debt ratio (missing total_assets).")
 
     # 3. Dividend track record
-    div_periods = [item.get('dividends_and_other_cash_distributions') for item in financial_line_items if item.get('dividends_and_other_cash_distributions') is not None]
+    div_periods = [item.dividends_and_other_cash_distributions for item in financial_line_items if item.dividends_and_other_cash_distributions is not None]
     if div_periods:
         # In many data feeds, dividend outflow is shown as a negative number
         # (money going out to shareholders). We'll consider any negative as 'paid a dividend'.
@@ -214,11 +214,11 @@ def analyze_valuation_graham(metrics: list, financial_line_items: list, market_c
         return {"score": 0, "details": "Insufficient data to perform valuation"}
 
     latest = financial_line_items[-1]
-    current_assets = latest.get('current_assets') or 0
-    total_liabilities = latest.get('total_liabilities') or 0
-    book_value_ps = latest.get('book_value_per_share') or 0
-    eps = latest.get('earnings_per_share') or 0
-    shares_outstanding = latest.get('outstanding_shares') or 0
+    current_assets = latest.current_assets or 0
+    total_liabilities = latest.total_liabilities or 0
+    book_value_ps = latest.book_value_per_share or 0
+    eps = latest.earnings_per_share or 0
+    shares_outstanding = latest.outstanding_shares or 0
 
     details = []
     score = 0

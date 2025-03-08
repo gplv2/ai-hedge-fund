@@ -11,7 +11,6 @@ import numpy as np
 
 import pprint
 
-#from tools.api import get_api_client, get_financial_metrics,get_prices,prices_to_df
 from tools.api import get_api_client, get_financial_metrics, get_prices, prices_to_df_alt
 
 from utils.progress import progress
