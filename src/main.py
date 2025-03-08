@@ -1,8 +1,13 @@
 import sys
 import json
-
 import logging
 import os
+
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
+from langgraph.graph import END, StateGraph
+from colorama import Fore, Style, init
+import questionary
 
 # Set the logging level based on an environment variable
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
@@ -35,12 +40,6 @@ formatter = logging.Formatter("%(asctime)s [%(name)s] [%(levelname)s] %(message)
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-
-from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from langgraph.graph import END, StateGraph
-from colorama import Fore, Style, init
-import questionary
 
 # Debug before loading the .env file
 logger.debug("Before load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
