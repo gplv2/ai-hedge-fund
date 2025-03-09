@@ -177,44 +177,7 @@ if __name__ == "__main__":
 
     pprint(type(convert_datetimes("2025-01-01 00:00:00")))
 
-    # Example usage:
-    d1 = convert_date("2021-12-31")          # Returns a datetime object by default
-    d2 = convert_date("2022-01-01", return_type="date")  # Returns a date object
-
-    print(d1)  # e.g. 2021-12-31 00:00:00
-    print(d2)  # 2022-01-01
-
-    # Comparisons work as long as you are comparing objects of the same type.
-    # If you compare datetime to datetime or date to date, all is well.
-    if d1 < convert_date("2022-01-01"):
-        print("d1 is before January 1, 2022")
-
-    # Example JSON result set
-    sample_json = {
-        "data": [
-            {"date": "2025-02-16T14:30:00Z", "value": 123},
-            {"date": "2025-02-15T10:15:00Z", "value": 456},
-            {"date": "2025-02-18T09:00:00Z", "value": 789},
-        ]
-    }
-
-    min_date, max_date = extract_date_limits(sample_json)
-    print("Min date:", min_date)  # e.g., "2025-02-15"
-    print("Max date:", max_date)  # e.g., "2025-02-18"
-
-    # Simulated JSON response where the date records are under "news"
-    sample_json = {
-        "news": [
-            {"date": "2025-02-16T14:30:00Z", "headline": "News A"},
-            {"date": "2025-02-15T10:15:00Z", "headline": "News B"},
-            {"date": "2025-02-18T09:00:00Z", "headline": "News C"},
-        ]
-    }
-
-    min_date, max_date = extract_date_limits(sample_json)
-    print("Min date:", min_date)  # e.g., "2025-02-15"
-    print("Max date:", max_date)  # e.g., "2025-02-18"
-
+    
     # If your JSON uses a different key for records:
     alt_json = {
         "articles": [
@@ -222,6 +185,14 @@ if __name__ == "__main__":
             {"timestamp": "2025-03-05T12:00:00Z", "title": "Article 2"}
         ]
     }
+
+    min_date, max_date = extract_date_limits(alt_json)
+    print("Min date:", min_date)  # e.g., "2025-02-15"
+    print("Max date:", max_date)  # e.g., "2025-02-18"
+
+    min_date, max_date = extract_date_limits(alt_json)
+    print("Min date:", min_date)  # e.g., "2025-02-15"
+    print("Max date:", max_date)  # e.g., "2025-02-18"
 
     min_date, max_date = extract_date_limits(alt_json, data_key="articles", date_field="timestamp", fmt="%Y-%m-%d")
     print("Alt Min date:", min_date)  # "2025-03-01"

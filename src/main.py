@@ -9,6 +9,20 @@ from langgraph.graph import END, StateGraph
 from colorama import Fore, Style, init
 import questionary
 
+from agents.portfolio_manager import portfolio_management_agent
+from agents.risk_manager import risk_management_agent
+from graph.state import AgentState
+from utils.display import print_trading_output
+from utils.analysts import ANALYST_ORDER, get_analyst_nodes
+from utils.progress import progress
+from llm.models import LLM_ORDER, get_model_info
+
+import argparse
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from utils.visualize import save_graph_as_png
+
+
 # Set the logging level based on an environment variable
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
 #LOG_LEVEL = logging.DEBUG
@@ -51,20 +65,6 @@ load_dotenv(os.getcwd()+'/.env')
 # Debug after loading the .env file
 logger.debug("After load_dotenv: USE_IBKR = %r", os.environ.get("USE_IBKR"))
 
-from agents.portfolio_manager import portfolio_management_agent
-from agents.risk_manager import risk_management_agent
-from graph.state import AgentState
-from utils.display import print_trading_output
-from utils.analysts import ANALYST_ORDER, get_analyst_nodes
-from utils.progress import progress
-from llm.models import LLM_ORDER, get_model_info
-
-
-import argparse
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from utils.visualize import save_graph_as_png
-
 
 init(autoreset=True)
 
@@ -74,10 +74,10 @@ def parse_hedge_fund_response(response):
 
     try:
         return json.loads(response)
-    except:
+
+    except json.JSONDecodeError:
         print(f"Error parsing response: {response}")
         return None
-
 
 ##### Run the Hedge Fund #####
 def run_hedge_fund(

@@ -8,9 +8,6 @@ from pprint import pprint
 from utils.timeutils import convert_to_date, extract_date_limits
 from utils.debugvariable import debug_variable_type
 
-import logging
-logger = logging.getLogger(__name__)
-
 from data.models import (
     CompanyNews,
     CompanyNewsResponse,
@@ -28,6 +25,9 @@ from data.models import (
 # You can import your Pydantic models if you have them.
 
 from utils.cache import cache_api_response
+
+import logging
+logger = logging.getLogger(__name__)
 
 class FinancialsAPIClient:
     def __init__(self, config=None):

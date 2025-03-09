@@ -65,7 +65,7 @@ def cache_api_response(timeout: int = 3600):
             if cached_data:
                 return_type = inspect.signature(func).return_annotation
 
-                if hasattr(return_type, '__origin__') and return_type.__origin__ == list:
+                if hasattr(return_type, '__origin__') and return_type.__origin__ is list:
                     # Handle List[Model]
                     model_class = return_type.__args__[0]
                     return deserialize_pydantic(cached_data, model_class)

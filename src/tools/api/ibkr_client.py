@@ -8,9 +8,6 @@ from utils.timeutils import calculate_bar_period
 from utils.timeutils import convert_datetimes
 from utils.debugvariable import debug_variable_type
 
-import logging
-logger = logging.getLogger(__name__)
-
 # Initialize logging for ibind
 # ibind_logs_initialize()
 
@@ -23,6 +20,8 @@ from data.models import (
     InsiderTrade,
 )
 
+import logging
+logger = logging.getLogger(__name__)
 # Assume FinancialMetricsResponse and FinancialMetrics are defined (e.g., via Pydantic)
 
 #ibkr_api = os.environ.get("BASE_API_URL")
@@ -111,13 +110,13 @@ class IBKRClientWrapper:
         # get cache from ledger in USD
         ledger = self.client.get_ledger().data
 
-        jsonl = json.dumps(ledger).encode('utf-8')
+        #jsonl = json.dumps(ledger).encode('utf-8')
 
         #logging.debug("Ledger JSON : %s", jsonl, exc_info=True)
         #logging.debug("Ledger : %s", ledger, exc_info=True)
 
         total_cash = 0
-        net_liq = 0
+        #net_liq = 0
 
         for currency, subledger in ledger.items():
             # need to map on this strange structure:
@@ -130,7 +129,7 @@ class IBKRClientWrapper:
                 # total_cash: float = 0.0
             if currency == 'BASE':
                total_cash= subledger['cashbalance']
-               net_liq =subledger['stockmarketvalue']
+               #net_liq =subledger['stockmarketvalue']
 
         positions= self.client.positions().data
 
