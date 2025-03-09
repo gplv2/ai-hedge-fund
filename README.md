@@ -62,7 +62,7 @@ it needs:
 
  - Redis server
  - ibeam
- - (ibind but that should be installed by poetry ), the submodule here is for dev purposes
+ - (ibind but that should be installed by uv ), the submodule here is for dev purposes
 
 ## Setup
 
