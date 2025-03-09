@@ -53,7 +53,7 @@ class FinancialsAPIClient:
 
         response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
-            raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
+            raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
 
         # Expecting a JSON response with a key "financial_metrics"
         data = response.json()
@@ -149,7 +149,7 @@ class FinancialsAPIClient:
 
       response = requests.post(url, headers=headers, json=body)
       if response.status_code != 200:
-          raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
+          raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
       data = response.json()
       response_model = LineItemResponse(**data)
       search_results = response_model.search_results
@@ -194,7 +194,7 @@ class FinancialsAPIClient:
         while True:
             response = requests.get(url, headers=headers, params=params)
             if response.status_code != 200:
-                raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
+                raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
 
             data = response.json()
             response_model = InsiderTradeResponse(**data)
@@ -260,7 +260,7 @@ class FinancialsAPIClient:
         while True:
             response = requests.get(url, headers=headers, params=params)
             if response.status_code != 200:
-                raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
+                raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
 
             data = response.json()
             response_model = CompanyNewsResponse(**data)

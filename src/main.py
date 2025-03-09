@@ -9,9 +9,16 @@ from langgraph.graph import END, StateGraph
 from colorama import Fore, Style, init
 import questionary
 
+from agents.ben_graham import ben_graham_agent
+from agents.bill_ackman import bill_ackman_agent
+from agents.fundamentals import fundamentals_agent
 from agents.portfolio_manager import portfolio_management_agent
+from agents.technicals import technical_analyst_agent
 from agents.risk_manager import risk_management_agent
+from agents.sentiment import sentiment_agent
+from agents.warren_buffett import warren_buffett_agent
 from graph.state import AgentState
+from agents.valuation import valuation_agent
 from utils.display import print_trading_output
 from utils.analysts import ANALYST_ORDER, get_analyst_nodes
 from utils.progress import progress
@@ -20,7 +27,9 @@ from llm.models import LLM_ORDER, get_model_info
 import argparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from tabulate import tabulate
 from utils.visualize import save_graph_as_png
+import json
 
 
 # Set the logging level based on an environment variable
@@ -70,14 +79,19 @@ init(autoreset=True)
 
 
 def parse_hedge_fund_response(response):
-    import json
-
+    """Parses a JSON string and returns a dictionary."""
     try:
         return json.loads(response)
-
-    except json.JSONDecodeError:
-        print(f"Error parsing response: {response}")
+    except json.JSONDecodeError as e:
+        print(f"JSON decoding error: {e}\nResponse: {repr(response)}")
         return None
+    except TypeError as e:
+        print(f"Invalid response type (expected string, got {type(response).__name__}): {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error while parsing response: {e}\nResponse: {repr(response)}")
+        return None
+
 
 ##### Run the Hedge Fund #####
 def run_hedge_fund(
@@ -222,7 +236,7 @@ if __name__ == "__main__":
     # Parse tickers from comma-separated string
     tickers = [ticker.strip() for ticker in args.tickers.split(",")]
 
-    # Handle analysts selection
+    # Select analysts
     selected_analysts = None
     if args.analysts:
         if args.analysts.lower() == "all":
