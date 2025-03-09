@@ -51,3 +51,7 @@ build-backend = "hatchling.build"
 line-length = 420
 target-version = ['py39']
 include = '\.pyi?$'
+
+[tool.ruff]
+exclude = ["ibeam","ibind"]
+
