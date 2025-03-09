@@ -32,8 +32,11 @@ def valuation_agent(state: AgentState):
         if not financial_metrics:
             progress.update_status("valuation_agent", ticker, "Failed: No financial metrics found")
             continue
-        
+
         metrics = financial_metrics[0]
+
+        #logger.debug(metrics)
+        #logger.debug(type(metrics))
 
         progress.update_status("valuation_agent", ticker, "Gathering line items")
         # Fetch the specific line_items that we need for valuation purposes
@@ -69,6 +72,9 @@ def valuation_agent(state: AgentState):
 
 
         working_capital_change = current_financial_line_item.working_capital - previous_financial_line_item.working_capital
+
+        logger.debug(metrics)
+        logger.debug(type(metrics))
 
         # Owner Earnings Valuation (Buffett Method)
         owner_earnings_value = calculate_owner_earnings_value(

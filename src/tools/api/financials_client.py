@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import time
 import requests
@@ -12,6 +13,7 @@ from data.models import (
     CompanyNews,
     CompanyNewsResponse,
     FinancialMetrics,
+    FinancialMetricsResponse,
     Price,
     PriceResponse,
     LineItem,
@@ -35,7 +37,7 @@ class FinancialsAPIClient:
         # Limit might be used to restrict to 5 tickers, etc.
         self.limit = self.config.get("limit", 5)
 
-    @cache_api_response(timeout=600)
+    #@cache_api_response(timeout=6000)
     def get_financial_metrics(self, ticker: str, end_date: str, period: str = "ttm", limit: int = 10,) -> list[FinancialMetrics]:
 
         headers = {}
@@ -57,8 +59,19 @@ class FinancialsAPIClient:
 
         # Expecting a JSON response with a key "financial_metrics"
         data = response.json()
-        financial_metrics = data.get("financial_metrics", [])
-        #set_cache_financial_metrics(ticker, financial_metrics)
+        logger.debug(data)
+        logger.debug(type(data))
+        #sys.exit()
+        #financial_metrics = data.get("financial_metrics", [])
+
+        # Parse response with Pydantic model
+        metrics_response = FinancialMetricsResponse(**response.json())
+        # Return the FinancialMetrics objects directly instead of converting to dict
+        financial_metrics = metrics_response.financial_metrics
+
+        if not financial_metrics:
+            return []
+
         return financial_metrics
 
     @cache_api_response(timeout=600)
@@ -129,7 +142,7 @@ class FinancialsAPIClient:
 
         raise Exception("Max retries exceeded while attempting to get prices.")
 
-    @cache_api_response(timeout=600)
+    #@cache_api_response(timeout=600)
     def search_line_items(self, ticker, line_items: list[str], end_date: str, period: str = "30d" , limit: int = 100) -> list[LineItem]:
       """Fetch line items from API."""
       # If not in cache or insufficient data, fetch from API
@@ -303,12 +316,13 @@ class FinancialsAPIClient:
     def get_market_cap( self, ticker, end_date: str, ) -> float | None:
         """Fetch market cap from the API."""
         financial_metrics = self.get_financial_metrics(ticker, end_date)
+        #logger.debug(financial_metrics)
+        #logger.debug(type(financial_metrics[0]))
         logger.debug(financial_metrics)
         logger.debug(type(financial_metrics[0]))
-        logger.debug(type(financial_metrics))
         market_cap = financial_metrics[0].market_cap
-        pprint(market_cap)
-        pprint(type(market_cap))
+        #pprint(market_cap)
+        #pprint(type(market_cap))
         if not market_cap:
             return None
 
@@ -487,8 +501,3 @@ class FinancialsAPIClient:
     def portfolio_to_df(self):
         raise NotImplementedError("Financials.AI client does not implement positions")
 
-# cache result set model hint
-
-#FinancialsAPIClient.get_financial_metrics.model_class = list[FinancialMetrics]
-#FinancialsAPIClient.get_prices.model_class = list[PriceResponse]
-#FinancialsAPIClient.search_line_items.model_class = list[LineItem]
