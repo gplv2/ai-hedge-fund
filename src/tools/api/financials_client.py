@@ -37,7 +37,7 @@ class FinancialsAPIClient:
         # Limit might be used to restrict to 5 tickers, etc.
         self.limit = self.config.get("limit", 5)
 
-    #@cache_api_response(timeout=6000)
+    @cache_api_response(timeout=60000)
     def get_financial_metrics(self, ticker: str, end_date: str, period: str = "ttm", limit: int = 10,) -> list[FinancialMetrics]:
 
         headers = {}
@@ -74,7 +74,7 @@ class FinancialsAPIClient:
 
         return financial_metrics
 
-    @cache_api_response(timeout=600)
+    @cache_api_response(timeout=60000)
     def get_prices(self, ticker, start_date: str, end_date: str, max_retries=5, limit=5000):
         """Fetch price data from API with retry logic for rate limiting and server errors."""
         headers = {}
@@ -171,7 +171,7 @@ class FinancialsAPIClient:
 
       return search_results[:limit]
 
-    @cache_api_response(timeout=600)
+    @cache_api_response(timeout=60000)
     def get_insider_trades(self, ticker, end_date: str, start_date: str | None = None, limit: int = 1000, ) -> list[InsiderTrade]:
         """Fetch insider trades from cache or API."""
         # Check cache first
@@ -237,7 +237,7 @@ class FinancialsAPIClient:
         return all_trades
 
 
-    @cache_api_response(timeout=600)
+    @cache_api_response(timeout=60000)
     def get_company_news( self, ticker, end_date: str | None, start_date: str | None = None, limit: int = 500 ) -> list[CompanyNews]:
         """Fetch company news from cache or API."""
         #if cached_data := _cache.get_company_news(ticker):
@@ -483,6 +483,7 @@ class FinancialsAPIClient:
         return df
 
     # Update the get_price_data function to use the new functions
+    @cache_api_response(timeout=60000)
     def get_price_data(self, ticker, start_date: str, end_date: str) -> pd.DataFrame:
         prices = self.get_prices(ticker, start_date, end_date)
         #logger.debug(prices)

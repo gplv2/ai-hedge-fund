@@ -84,7 +84,7 @@ def stanley_druckenmiller_agent(state: AgentState):
 
         progress.update_status("stanley_druckenmiller_agent", ticker, "Fetching recent price data for momentum")
         # Fetch ~1 year of daily prices for momentum/trend analysis
-        prices = get_prices(ticker, start_date="2022-01-01", end_date=end_date)
+        prices = get_prices(ticker, start_date="2024-01-01", end_date=end_date)
 
         progress.update_status("stanley_druckenmiller_agent", ticker, "Analyzing growth & momentum")
         growth_momentum_analysis = analyze_growth_and_momentum(financial_line_items, prices)
